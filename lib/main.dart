@@ -1,4 +1,4 @@
-import 'package:artikel_islam/pages/HomePage.dart';
+import 'package:artikel_islam/pages/home_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
