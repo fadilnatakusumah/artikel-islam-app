@@ -1,18 +1,23 @@
+import 'package:artikel_islam/helpers/internetConnection.dart';
 import 'package:flutter/material.dart';
 
 class PopularCategories extends StatelessWidget {
   final bool isLoading;
 
-  const PopularCategories({Key key, @required this.isLoading}) : super(key: key);
+  const PopularCategories({
+    Key key,
+    @required this.isLoading,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    print("isLoading $isLoading");
     return Container(
       padding: EdgeInsets.all(10),
       height: Size.fromHeight(50).height,
       child: isLoading
           ? ListView.builder(
-        scrollDirection: Axis.horizontal,
+              scrollDirection: Axis.horizontal,
               itemBuilder: (_, __) {
                 return Container(
                   margin: EdgeInsets.only(right: 10),
@@ -32,55 +37,74 @@ class PopularCategories extends StatelessWidget {
                     "Konsultasi Syariah",
                     style: TextStyle(
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        // fontWeight: FontWeight.bold,
                         fontSize: 15),
                   ),
                   decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(20)),
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   margin: EdgeInsets.only(right: 5),
                   child: Text(
-                    "Muslimorid",
+                    "Muslim.or.id",
                     style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15),
+                      color: Colors.white,
+                      // fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                   decoration: BoxDecoration(
-                      color: Colors.blueAccent,
-                      borderRadius: BorderRadius.circular(20)),
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   margin: EdgeInsets.only(right: 5),
                   child: Text(
-                    "Rumaysho",
+                    "Muslimah.or.id",
                     style: TextStyle(
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        // fontWeight: FontWeight.bold,
                         fontSize: 15),
                   ),
                   decoration: BoxDecoration(
-                      color: Colors.deepOrange,
-                      borderRadius: BorderRadius.circular(20)),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  margin: EdgeInsets.only(right: 5),
-                  child: Text(
-                    "Firanda.com",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15),
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  decoration: BoxDecoration(
-                      color: Colors.lightBlueAccent,
-                      borderRadius: BorderRadius.circular(20)),
                 ),
+                // Container(
+                //   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                //   margin: EdgeInsets.only(right: 5),
+                //   child: Text(
+                //     "Rumaysho",
+                //     style: TextStyle(
+                //         color: Colors.white,
+                //         // fontWeight: FontWeight.bold,
+                //         fontSize: 15),
+                //   ),
+                //   decoration: BoxDecoration(
+                //     color: Colors.black54,
+                //     borderRadius: BorderRadius.circular(5),
+                //   ),
+                // ),
+                // Container(
+                //   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                //   margin: EdgeInsets.only(right: 5),
+                //   child: Text(
+                //     "Firanda.com",
+                //     style: TextStyle(
+                //         color: Colors.white,
+                //         fontWeight: FontWeight.bold,
+                //         fontSize: 15),
+                //   ),
+                //   decoration: BoxDecoration(
+                //       color: Colors.lightBlueAccent,
+                //       borderRadius: BorderRadius.circular(20)),
+                // ),
               ],
             ),
     );
