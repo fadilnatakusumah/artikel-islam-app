@@ -14,14 +14,15 @@ class ArticleSection extends StatefulWidget {
   final String endpointUrl;
   final String title;
   final VoidCallback onTap;
-  final ArticleService articleService;
+
+  // final ArticleService? articleService;
 
   const ArticleSection({
-    Key key,
-    @required this.endpointUrl,
+    Key? key,
+    required this.endpointUrl,
     this.title = "Article Title",
-    this.onTap,
-    this.articleService,
+    required this.onTap,
+    // required this.articleService,
   }) : super(key: key);
 
   @override
@@ -34,7 +35,10 @@ class _ArticleSectionState extends State<ArticleSection> {
 
   @override
   void initState() {
-    getListArticles();
+    print("initState() ArticleSection");
+    if (mounted) {
+      getListArticles();
+    }
     super.initState();
   }
 
@@ -44,17 +48,21 @@ class _ArticleSectionState extends State<ArticleSection> {
     final parentLoading = Provider.of<bool>(context, listen: true);
     print("parentLoading $parentLoading");
     if (parentLoading == true) {
-      getListArticles();
+        getListArticles();
     } else {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
     super.didChangeDependencies();
   }
 
   void getListArticles() async {
-    setState(() => _loading = true);
+    if (mounted) {
+      setState(() => _loading = true);
+    }
     http.get(widget.endpointUrl).then((value) {
       final response = json.decode(value.body);
       final List<Article> results = [];
@@ -64,13 +72,17 @@ class _ArticleSectionState extends State<ArticleSection> {
           results.add(new Article.fromJson(data));
         }).toList();
       }
-      setState(() {
-        _loading = false;
-        _listArticles = results;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _listArticles = results;
+        });
+      }
     }).catchError((onError) {
-      setState(() => _loading = false);
       print("Error $onError");
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     });
   }
 

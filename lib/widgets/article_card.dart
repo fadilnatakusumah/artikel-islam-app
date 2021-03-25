@@ -11,9 +11,9 @@ class ArticleCard extends StatelessWidget {
   final VoidCallback onTap;
 
   ArticleCard({
-    this.article,
-    this.endpoint,
-    this.onTap,
+    required this.article,
+    required this.endpoint,
+    required this.onTap,
   });
 
   void _goToDetailArticle(BuildContext context) async {
@@ -47,8 +47,7 @@ class ArticleCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                article.thumbnail ??
-                    "https://thumbs.dreamstime.com/b/no-image-available-icon-flat-vector-no-image-available-icon-flat-vector-illustration-132484366.jpg",
+                article.thumbnail,
                 fit: BoxFit.cover,
                 height: 100,
                 width: 210,
@@ -70,6 +69,8 @@ class ArticleCard extends StatelessWidget {
                 SizedBox(height: 2),
                 Text(
                   article.author,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
