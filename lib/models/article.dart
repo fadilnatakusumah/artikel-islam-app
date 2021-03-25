@@ -5,9 +5,18 @@ class Article {
   final String date;
   final String date_time;
 
-  Article({this.id, this.thumbnail, this.date, this.date_time, this.title});
+  Article({
+    required this.id,
+    required this.author,
+    required this.author_link,
+    required this.thumbnail,
+    required this.date,
+    required this.date_time,
+    required this.title,
+    this.content_html = "",
+  });
 
-  factory Article.fromJson(Map<String, dynamic> data){
+  factory Article.fromJson(Map<String, dynamic> data) {
     return Article(
       id: data["id"],
       title: data["title"],
