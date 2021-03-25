@@ -7,33 +7,52 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class ArticleService with ChangeNotifier {
-  SharedPreferences _prefs;
+  SharedPreferences? _prefs;
   List<Article> _savedArticles = [];
+
+  // constructor() async {
+  //   _prefs = await SharedPreferences.getInstance();
+  //   // _prefs = await S
+  // }
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     loadSavedArticles();
   }
 
-  Future<List<Article>> searchArticle({
-    CategoryArticle categoryArticle,
-    String query,
+  Future<Map<String, dynamic>> searchArticle({
+    required CategoryArticle categoryArticle,
+    Map<String, dynamic> params = const {"query": ""},
   }) async {
-    print("categoryArticle.endpointUrl: ${categoryArticle.endpointUrl}");
     List<Article> results = [];
+    Map<dynamic, dynamic> pagination = {"page": "1", "total_page": "1"};
+
+    Map<String, dynamic> passedParams = {};
+    if (params["query"] != null && params["query"] != "") {
+      passedParams["s"] = params["query"];
+    }
+    if (params["page"] != null) {
+      passedParams["page"] = params["page"];
+    }
+    print("params $params");
+    print("passedParams $passedParams");
+    var url = Uri.parse(categoryArticle.endpointUrl);
+    url = url.replace(queryParameters: passedParams);
+    print("url $url");
     try {
-      final request = await http.get("${categoryArticle.endpointUrl}?s=${query}");
+      final request = await http.get(url);
       final response = json.decode(request.body);
       if (response["success"] == true) {
         final list = response["data"]["data"] as List;
+        pagination = response["data"]["pagination"] as Map;
         list.map((data) {
           results.add(new Article.fromJson(data));
         }).toList();
       }
     } catch (err) {
-      print("err $err");
+      print("err sini $err");
     }
-    return results;
+    return {"data": results, "pagination": pagination};
   }
 
   // Future<List<Article>> getListArticles(String endpointUrl) async {
@@ -51,43 +70,43 @@ class ArticleService with ChangeNotifier {
   //   });
   // }
 
-  Future<List<Article>> getListArticles(String endpointUrl) async {
-    // return http
-    //     .get(endpointUrl)
-    //     .then((value) {
-    //   final response = json.decode(value.body);
-    //   // print('response $response');
-    //   final List<Article> results = [];
-    //   if (response["success"] == true) {
-    //     final list = response["data"]["data"] as List;
-    //   }
-    // };
-  }
+  // Future<List<Article>> getListArticles(String endpointUrl) async {
+  // return http
+  //     .get(endpointUrl)
+  //     .then((value) {
+  //   final response = json.decode(value.body);
+  //   // print('response $response');
+  //   final List<Article> results = [];
+  //   if (response["success"] == true) {
+  //     final list = response["data"]["data"] as List;
+  //   }
+  // };
+  // }
 
-  Future<void> saveToLocal(Article article) {
+  Future<void> saveToLocal(Article article) async {
     print("===saving article===");
     if (_prefs == null) return null;
-    final List<String> getArticles = _prefs.getStringList(LOCAL_ARTICLES);
+    final List<String> getArticles = _prefs!.getStringList(LOCAL_ARTICLES);
     if (getArticles != null) {
       getArticles.add(json.encode(article.toMap()));
-      _prefs.setStringList(LOCAL_ARTICLES, getArticles);
+      _prefs!.setStringList(LOCAL_ARTICLES, getArticles);
     } else {
       List<String> newListArticles = [];
       newListArticles.add(json.encode(article.toMap()));
-      _prefs.setStringList(LOCAL_ARTICLES, newListArticles);
+      _prefs!.setStringList(LOCAL_ARTICLES, newListArticles);
     }
     loadSavedArticles();
   }
 
-  Future<void> unsaveFromLocal(Article article) {
+  Future<void> unsaveFromLocal(Article article) async {
     print("===unsaving article===");
     if (_prefs == null) return null;
-    final listOfArticles = _prefs.getStringList(LOCAL_ARTICLES);
+    final listOfArticles = _prefs!.getStringList(LOCAL_ARTICLES);
     listOfArticles.removeWhere((String element) {
-      final Map<String, dynamic> articleMap = json.decode(element) as Map;
+      final Map articleMap = json.decode(element) as Map;
       return articleMap["id"] == article.id;
     });
-    _prefs.setStringList(LOCAL_ARTICLES, listOfArticles);
+    _prefs!.setStringList(LOCAL_ARTICLES, listOfArticles);
     loadSavedArticles();
   }
 
@@ -95,7 +114,7 @@ class ArticleService with ChangeNotifier {
     print("===loading saved articles===");
     if (_prefs == null) return null;
     final List<Article> articles = [];
-    final List<String> getArticles = _prefs.getStringList(LOCAL_ARTICLES);
+    final List<String> getArticles = _prefs!.getStringList(LOCAL_ARTICLES);
     if (getArticles != null) {
       getArticles.forEach((element) {
         articles.add(Article.fromJson(json.decode(element)));
@@ -106,7 +125,7 @@ class ArticleService with ChangeNotifier {
   }
 
   Article loadDetailArticle(Article article) {
-    final List<String> listOfArticles = _prefs.getStringList(LOCAL_ARTICLES);
+    final List<String> listOfArticles = _prefs!.getStringList(LOCAL_ARTICLES);
 
     var findArticle = listOfArticles.firstWhere((String element) {
       final savedArticle = json.decode(element);
@@ -126,14 +145,14 @@ class ArticleService with ChangeNotifier {
     try {
       var check = _savedArticles.firstWhere(
         (savedArticle) => article.id == savedArticle.id,
-        orElse: () => null,
       );
+      // ignore: unnecessary_null_comparison
       return check != null ? true : false;
     } catch (err) {
       print("err $err");
       return false;
     }
-    // if (check != null) return true;
+    // if (check != null)return true;
     print("article ${article.title}");
   }
 }
