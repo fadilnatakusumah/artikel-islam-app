@@ -7,25 +7,25 @@ class SkeletonContainer extends StatelessWidget {
   final BorderRadius borderRadius;
 
   const SkeletonContainer._({
-    Key key,
+    Key? key,
     this.width = double.infinity,
     this.height = double.infinity,
     this.borderRadius = const BorderRadius.all(Radius.circular(0)),
   }) : super(key: key);
 
   const SkeletonContainer.square({
-    Key key,
-    double height,
-    double width,
+    Key? key,
+    required double height,
+    required double width,
   }) : this._(
           width: width,
           height: height,
         );
 
   const SkeletonContainer.rounded({
-    Key key,
-    double height,
-    double width,
+    Key? key,
+    required double height,
+    required double width,
     BorderRadius borderRadius = const BorderRadius.all(Radius.circular(12)),
   }) : this._(
           width: width,
