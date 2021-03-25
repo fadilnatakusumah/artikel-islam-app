@@ -11,13 +11,13 @@ class Article {
   final String content_html;
 
   Article({
-    this.id,
-    this.author,
-    this.author_link,
-    this.thumbnail,
-    this.date,
-    this.date_time,
-    this.title,
+    required this.id,
+    required this.author,
+    required this.author_link,
+    required this.thumbnail,
+    required this.date,
+    required this.date_time,
+    required this.title,
     this.content_html = "",
   });
 
