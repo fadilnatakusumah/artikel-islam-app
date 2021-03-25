@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:artikel_islam/constants/api_endpoint.dart';
@@ -12,6 +13,8 @@ import 'package:artikel_islam/services/locals/article_service.dart';
 import 'package:artikel_islam/widgets/article_section.dart';
 import 'package:artikel_islam/widgets/connection_fallback.dart';
 import 'package:artikel_islam/widgets/popular_categories.dart';
+import 'package:artikel_islam/widgets/random_hadits.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -23,14 +26,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isLoading = true;
+  bool _isLoading = false;
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
-  ArticleService _articleService;
-  bool isConnected = true;
+  ArticleService? _articleService;
+  bool _isConnected = true;
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     print("didChangeDependencies");
     _initData();
     super.didChangeDependencies();
@@ -40,50 +42,35 @@ class _HomePageState extends State<HomePage> {
   initState() {
     print("initState");
     _initData();
+    _getListData();
     super.initState();
   }
 
   void _initData() async {
-    print("_initData");
-    bool checkConnection = await checkIsConnected();
-    print("checkConnection: $checkConnection");
-    // SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
     _articleService = Provider.of<ArticleService>(context, listen: false);
-    _articleService.init().then((_) => setState(() {
-          isConnected = checkConnection;
-          isLoading = false;
-        }));
-    // });
+    await _articleService!.init();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
-  Future<void> getListData() async {
+  Future<void> _getListData() async {
     print("getListData()");
-    setState(() => isLoading = true);
-    // bool checkConnection = await checkIsConnected();
-    // print("checkConnection $checkConnection");
-    // _articleService.loadSavedArticles();
-    // setState(() {
-    //   isConnected = checkConnection;
-    // });
-    // if (checkIsConnected() == false) {
-    //   setState(() {
-    //     isConnected = false;
-    //     isLoading = false;
-    //   });
-    //
-    //   return;
-    // }
-
-    // if (check == false) {
-    //   print("TIDAK TERSAMBUNG");
-    //   setState(() {
-    // isConnected = false;
-    // isLoading = false;
-    //   });
-    //   return;
-    // }
+    setState(() => _isLoading = true);
+    bool checkConnection = await checkIsConnected();
+    print("checkConnection final $checkConnection");
+    if (!checkConnection) {
+      setState(() {
+        _isConnected = false;
+        _isLoading = false;
+      });
+      return;
+    }
     await Future.delayed(Duration(milliseconds: 2500));
-    setState(() => isLoading = false);
+    setState(() {
+      _isConnected = true;
+      _isLoading = false;
+    });
   }
 
   // _showModalBottomSheet(BuildContext context) {
@@ -121,7 +108,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> savedArticlesWidget() {
     List<Widget> tempWidget = [];
     if (_articleService == null) return tempWidget;
-    _articleService.savedArticles
+    _articleService!.savedArticles
         .map((Article article) => tempWidget.add(
               Container(
                 margin: EdgeInsets.only(bottom: 12),
@@ -186,13 +173,18 @@ class _HomePageState extends State<HomePage> {
     return tempWidget;
   }
 
-  Widget buildListSavedArticles() {
+  Widget _renderListSavedArticles() {
     return Container(
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.black12, width: 1)),
+        border: Border(
+          top: BorderSide(
+            color: Colors.black12,
+            width: 1,
+          ),
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.only(top: 20.0),
+        padding: const EdgeInsets.only(top: 20, bottom: 15),
         child: Column(
           children: [
             Row(children: [
@@ -206,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ]),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Column(children: savedArticlesWidget())
           ],
         ),
@@ -214,10 +206,51 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _renderArticleCategories() {
+    if (!_isLoading && !_isConnected) {
+      return Container();
+    }
+    return PopularCategories(
+      isLoading: _isLoading,
+      articleService: _articleService!,
+    );
+  }
+
+  Widget _renderArticleSections() {
+    if (!_isConnected && !_isLoading) {
+      return Container(
+        padding: EdgeInsets.all(30),
+        child: Center(child: Text("Internet tidak tersambung")),
+      );
+    }
+    return Container(
+      padding: EdgeInsets.only(bottom: 15),
+      child: Column(
+        children: [
+          ArticleSection(
+            endpointUrl: ApiEndpoint.KONSULTASI_SYARIAH,
+            title: "Konsultasi Syariah",
+            onTap: () {
+              _articleService!.loadSavedArticles();
+              setState(() {});
+            },
+          ),
+          ArticleSection(
+            endpointUrl: ApiEndpoint.MUSLIMORID,
+            title: "Muslim.or.id",
+            onTap: () {
+              _articleService!.loadSavedArticles();
+              setState(() {});
+            },
+          )
+        ],
+      ),
+    );
+  }
+
   Widget _buildWidgetListDataAndroid(BuildContext context) {
-    print("_buildWidgetListDataAndroid()");
     return RefreshIndicator(
-      onRefresh: getListData,
+      onRefresh: _getListData,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -248,36 +281,17 @@ class _HomePageState extends State<HomePage> {
           //     ),
           //   ),
           // ),
-          PopularCategories(isLoading: isLoading),
+          _renderArticleCategories(),
           SizedBox(height: 5),
           Expanded(
             child: ListView(
               padding: EdgeInsets.symmetric(horizontal: 10),
               children: [
-                Column(
-                  children: [
-                    ArticleSection(
-                      endpointUrl: ApiEndpoint.KONSULTASI_SYARIAH,
-                      title: "Konsultasi Syariah",
-                      onTap: () {
-                        _articleService.loadSavedArticles();
-                        setState(() {});
-                      },
-                      articleService: _articleService,
-                    ),
-                    ArticleSection(
-                      endpointUrl: ApiEndpoint.MUSLIMORID,
-                      title: "Muslim.or.id",
-                      onTap: () {
-                        _articleService.loadSavedArticles();
-                        setState(() {});
-                      },
-                      articleService: _articleService,
-                    )
-                  ],
-                ),
-                SizedBox(height: 10),
-                buildListSavedArticles()
+                _renderArticleSections(),
+                // SizedBox(height: 10),
+                RandomHadits(),
+                // SizedBox(height: 20),
+                _renderListSavedArticles()
               ],
             ),
           ),
@@ -288,63 +302,86 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      endDrawerEnableOpenDragGesture: false,
-      key: _drawerKey,
-      drawer: DrawerPage(),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () => _drawerKey.currentState.openDrawer(),
-          // color: Colors.white,
-        ),
-        // backgroundColor: Theme.of(context).accentColor,
-        title: Text(
-          "Artikel Islam",
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search_rounded),
-            // icon: Icon(Icons.nights_stay_outlined),
-            onPressed: () => Navigator.push(
+    return WillPopScope(
+      onWillPop: () async {
+        return await showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text("Keluar aplikasi"),
+                content: Text("Apakah kamu yakin ingin keluar dari aplikasi?"),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text("Tidak"),
+                  ),
+                  SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text("Ya"),
+                  ),
+                ],
+              ),
+            ) ??
+            Future.value(false);
+      },
+      child: Scaffold(
+        endDrawerEnableOpenDragGesture: false,
+        key: _drawerKey,
+        drawer: DrawerPage(articleService: _articleService!),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => _drawerKey.currentState?.openDrawer(),
+            // color: Colors.white,
+          ),
+          // backgroundColor: Theme.of(context).accentColor,
+          title: Text(
+            "Artikel Islam",
+            style: TextStyle(color: Colors.white),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.search_rounded),
+              // icon: Icon(Icons.nights_stay_outlined),
+              onPressed: () => Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (_) => SelectCategoryPage(
+                      articleService: _articleService!,
+                      isConnected: _isConnected,
+                    ),
+                  )),
+              color: Colors.white,
+            ),
+            // IconButton(
+            //   // icon: Icon(Icons.wb_sunny_outlined),
+            //   icon: Icon(Icons.nights_stay_outlined),
+            //   onPressed: () {},
+            //   color: Colors.white,
+            // ),
+            IconButton(
+              icon: Icon(Icons.bookmark_border_outlined),
+              onPressed: () => Navigator.push(
                 context,
                 CupertinoPageRoute(
-                  builder: (_) => SelectCategoryPage(
-                    articleService: _articleService,
-                    isConnected: isConnected,
+                  builder: (context) => BookmarkPage(
+                    articleService: _articleService!,
                   ),
-                )),
-            color: Colors.white,
-          ),
-          // IconButton(
-          //   // icon: Icon(Icons.wb_sunny_outlined),
-          //   icon: Icon(Icons.nights_stay_outlined),
-          //   onPressed: () {},
-          //   color: Colors.white,
-          // ),
-          IconButton(
-            icon: Icon(Icons.bookmark_border_outlined),
-            onPressed: () => Navigator.push(
-              context,
-              CupertinoPageRoute(
-                builder: (context) => BookmarkPage(
-                  articleService: _articleService,
                 ),
+              ).then((value) => setState(() {})),
+              color: Colors.white,
+            )
+          ],
+        ),
+        body: Platform.isIOS
+            ? Container()
+            : Provider.value(
+                value: _isLoading,
+                updateShouldNotify: (_, __) => true,
+                child: _buildWidgetListDataAndroid(context),
               ),
-            ).then((value) => setState(() {})),
-            color: Colors.white,
-          )
-        ],
       ),
-      body: Platform.isIOS
-          ? Container()
-          : Provider.value(
-              value: isLoading,
-              updateShouldNotify: (_, __) => true,
-              child: _buildWidgetListDataAndroid(context),
-            ),
     );
   }
 }

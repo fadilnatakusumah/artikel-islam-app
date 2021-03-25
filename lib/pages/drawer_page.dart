@@ -1,11 +1,24 @@
+import 'package:artikel_islam/pages/about_page.dart';
+import 'package:artikel_islam/pages/categories.dart';
+import 'package:artikel_islam/services/locals/article_service.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DrawerPage extends StatelessWidget {
+  final ArticleService articleService;
+
+  const DrawerPage({
+    Key? key,
+    required this.articleService,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     TextStyle _textStyle = TextStyle(
-      color: Colors.black,
-      fontSize: 20,
+      color: Colors.black87,
+      fontSize: 16,
+      fontWeight: FontWeight.normal,
     );
     return Container(
       width: MediaQuery.of(context).size.width / 1.5,
@@ -14,11 +27,14 @@ class DrawerPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           DrawerHeader(
-            decoration: BoxDecoration(color: Colors.black45),
+            decoration: BoxDecoration(color: Colors.grey),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Container(
-                child: Text('CHECK'),
+              child: Center(
+                child: Image.asset(
+                  "assets/artikel_islam.png",
+                  width: 80,
+                ),
               ),
             ),
           ),
@@ -34,17 +50,37 @@ class DrawerPage extends StatelessWidget {
 //            ),
 //          ),
           InkWell(
-            onTap: () {
-              print("TO ABOUT PAGE");
-            },
+            onTap: () => Navigator.of(context).push(
+              CupertinoPageRoute(
+                builder: (context) => CategoriesPage(
+                  articleService: articleService,
+                ),
+              ),
+            ),
+            child: ListTile(
+              leading: Icon(
+                Icons.web,
+                size: 20,
+                color: Theme.of(context).accentColor,
+              ),
+              title: Text(
+                "Website Islam",
+                style: _textStyle,
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: () => Navigator.of(context).push(CupertinoPageRoute(
+              builder: (context) => AboutPage()
+            )),
             child: ListTile(
               leading: Icon(
                 Icons.info,
                 size: 20,
-                color: Colors.black,
+                color: Theme.of(context).accentColor,
               ),
               title: Text(
-                "About",
+                "Tentang aplikasi",
                 style: _textStyle,
               ),
             ),
@@ -55,9 +91,9 @@ class DrawerPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('version 1.0.0'),
+                Text('v1.0.0'),
                 Text(
-                  'made by fadilnatakusumah',
+                  'fadilnatakusumah',
                   style: TextStyle(color: Colors.black45),
                 ),
               ],
@@ -66,5 +102,12 @@ class DrawerPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+        DiagnosticsProperty<ArticleService>('articleService', articleService));
   }
 }

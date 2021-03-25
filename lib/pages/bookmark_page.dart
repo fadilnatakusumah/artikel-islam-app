@@ -1,15 +1,15 @@
-import 'package:artikel_islam/helpers/stringStripHtml.js.dart';
+import 'package:artikel_islam/helpers/stringStripHtml.dart';
 import 'package:artikel_islam/models/article.dart';
 import 'package:artikel_islam/pages/article_detail_page.dart';
 import 'package:artikel_islam/services/locals/article_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class BookmarkPage extends StatefulWidget {
   final ArticleService articleService;
 
-  const BookmarkPage({Key key, this.articleService}) : super(key: key);
+  const BookmarkPage({Key? key, required this.articleService})
+      : super(key: key);
 
   @override
   _BookmarkPageState createState() => _BookmarkPageState();
@@ -34,6 +34,31 @@ class _BookmarkPageState extends State<BookmarkPage> {
       itemBuilder: (context, index) {
         final Article _article = widget.articleService.savedArticles[index];
         return ListTile(
+          onTap: () => _goToDetailArticle(context, _article),
+          contentPadding: EdgeInsets.all(10),
+          leading: Image.network(
+            _article.thumbnail,
+            width: 100,
+          ),
+          title: Padding(
+            padding: const EdgeInsets.only(bottom: 3),
+            child: Text(
+              _article.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          subtitle: Text(
+            "${stringStripHtml(_article.content_html).substring(0, 100)}...",
+            style: TextStyle(fontSize: 13),
+          ),
+        );
+
+        return ListTile(
           // contentPadding: EdgeInsets.only(),
           onTap: () => _goToDetailArticle(context, _article),
           leading: Image.network(
@@ -47,9 +72,13 @@ class _BookmarkPageState extends State<BookmarkPage> {
           //   height: 70,
           //   width: 90,
           // ),
-          title: Text(_article.title),
+          title: Text(
+            _article.title,
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
           subtitle: Text(
             "${stringStripHtml(_article.content_html).substring(0, 100)}...",
+            style: TextStyle(fontSize: 13),
           ),
         );
       },
@@ -61,6 +90,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
           onPressed: () {

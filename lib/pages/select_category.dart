@@ -8,26 +8,30 @@ class SelectCategoryPage extends StatefulWidget {
   final ArticleService articleService;
   final bool isConnected;
 
-  const SelectCategoryPage({Key key, this.articleService, this.isConnected})
-      : super(key: key);
+  const SelectCategoryPage({
+    Key? key,
+    required this.articleService,
+    required this.isConnected,
+  }) : super(key: key);
 
   @override
   _SelectCategoryPageState createState() => _SelectCategoryPageState();
 }
 
 class _SelectCategoryPageState extends State<SelectCategoryPage> {
-  bool _isLoading = false;
-  bool _isConnected = true;
+  bool _isLoading = true;
+  bool _isConnected = false;
 
   @override
   void initState() {
-    print("INIT STATE");
     checkConnection();
   }
 
   void checkConnection() async {
+    setState(() {
+      _isLoading = true;
+    });
     bool isConnected = await checkIsConnected();
-    print("isConnected $isConnected");
     setState(() {
       _isConnected = isConnected;
       _isLoading = false;
@@ -53,6 +57,11 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
   }
 
   Widget _renderPage(BuildContext context) {
+    if (_isLoading) {
+      return Center(
+        child: Text("Internet tidak tersambung"),
+      );
+    }
     if (!_isLoading && _isConnected) {
       return ListView(children: _renderCategories(context));
     }
