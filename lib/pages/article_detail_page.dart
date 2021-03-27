@@ -69,6 +69,9 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
           _isLoading = false;
         });
       }
+    }).catchError((error) {
+      print("error $error");
+      Navigator.of(context).pop();
     });
   }
 
